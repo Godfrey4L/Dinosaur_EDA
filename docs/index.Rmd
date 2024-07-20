@@ -1,0 +1,233 @@
+---
+title: "Exploratory Analysis on a Dinosaur DataSet"
+output:
+  html_document: default
+  pdf_document: default
+
+---
+
+
+### ***Load necessary libraries***    
+```{r}
+
+
+library(tidyverse)
+library(leaflet)
+library(dplyr)
+library(ggplot2)
+
+```
+***
+
+
+#### ***Load and Preview Data***
+
+```{r}
+# Load the data
+setwd("C:/Users/Godfr/Downloads")
+dinosaurs <- read_csv('dinosaurs.csv',
+                      show_col_types = FALSE )
+dinosaurs <- dinosaurs %>% 
+  mutate(Age = dinosaurs$max_ma - dinosaurs$min_ma) %>% 
+  drop_na()
+
+dinosaurs
+
+```
+***
+
+
+#### ***Total distinct dinosaurs names***
+
+```{r}
+diff_name <- dinosaurs %>% 
+  distinct(name) %>% 
+  count(name = 'Total_number')
+
+diff_name
+
+
+```
+***
+
+#### ***Biggest Dinosaurs***
+```{r}
+
+biggest <- dinosaurs %>% 
+  select(name,
+         diet
+         ,length_m
+         ) %>% 
+  arrange(desc
+          (length_m)
+          )%>% 
+  distinct(name,
+           diet,
+           length_m) %>% 
+  head(10)
+
+biggest
+
+```
+***
+
+
+#### ***Smallest Dinosaurs***
+
+```{r}
+ 
+smallest <- dinosaurs %>%
+  select(name,
+         diet,
+         length_m) %>% 
+  arrange(length_m) %>% 
+  distinct(name,
+           diet,
+           length_m) %>% 
+  slice_head(n = 10)
+smallest
+```
+***
+
+
+#### ***Dinosaurs grouped by type***
+
+```{r}
+
+
+
+type <- dinosaurs %>% 
+  group_by(type) %>%
+  ggplot(aes(x = type, fill = diet)) +
+  geom_bar() + 
+  scale_fill_brewer(palette = 'Set1') +
+  theme_classic() + 
+  ggtitle("Dinosaur with the highest occurrence")
+
+type
+```
+***
+
+
+#### ***Dinosaurs grouped by Weight***
+
+```{r}
+Diet_size <- dinosaurs %>% 
+ggplot(aes
+	   (diet,length_m,  
+		fill = diet)) + 
+geom_boxplot() + 
+scale_fill_brewer(palette = 'Set1') + 
+theme_classic() + 
+ggtitle("Weight of Dinosaurs by Diet")
+
+Diet_size
+
+```
+***
+
+
+#### ***Notable Outliers in the dataset***
+
+```{r}
+ 
+
+outl <- dinosaurs %>% 
+select(name,
+	   diet, 
+	   type, 
+	   length_m,
+	   Age) %>%
+filter(length_m >20)
+
+outl
+```
+***
+
+
+#### ***Correlation between length and Age***
+
+```{r}
+
+
+correlation <- cor(dinosaurs$length_m,
+				   dinosaurs$Age)
+
+correlation
+```
+***
+
+
+#### ***Correlation between length and Age Plot***
+
+```{r}
+
+corr <- dinosaurs %>% 
+ggplot(aes
+	   (length_m, 
+		Age, color 
+		= diet)) +
+geom_point() + 
+theme_classic() + 
+ggtitle("Correlation between Age and length")
+
+corr
+
+
+
+```
+***
+
+
+#### ***Map Representation of Dinosaurs***
+
+```{r}
+map <- leaflet(data = dinosaurs) %>%
+addTiles() %>% 
+addCircleMarkers(~lng, 
+~lat,  popup = ~paste(
+"Name:", name, "<br>",
+"Diet:", diet, "<br>",
+"Type:", type, "<br>",
+"Length (m):", length_m, "<br>",
+"Max Age (Ma):", max_ma, "<br>",
+"Min Age (Ma):", min_ma, "<br>",
+"Region:", region, "<br>",
+"Class:", class, "<br>",
+"Family:", family),
+radius = 5,
+color = "blue",
+fillOpacity = 0.7)
+
+map
+                                                       
+
+```
+
+**Exploratory Data Analysis of Dinosaur Dataset**
+
+**Data Preprocessing:** Missing data, deemed negligible in its impact on the analysis, was removed to ensure the integrity and accuracy of the dataset
+
+**Introduction:** The dataset comprises information on 189 distinct dinosaur species categorized into three dietary groups: carnivores, herbivores, and omnivores. This analysis aims to explore various aspects of the dataset, including the distribution of dinosaur types, the presence of outliers, and correlations between dinosaur length and age.
+
+**Key Findings:**
+
+1.  Dinosaur Distribution by Diet:
+
+    -   There are 189 dinosaur species classified into three main dietary groups: carnivores, herbivores, and omnivores.
+    -   Herbivores constitute the largest proportion of the dataset, followed by carnivores and omnivores.
+
+2.  Largest and Smallest Dinosaurs:
+
+    -   The largest dinosaur in the dataset is Supersaurus, belonging to the herbivore group, with an impressive length of 35 meters.
+    -   The smallest dinosaur is Shanag, categorized as a carnivore, with a length of 0.45 meters.
+
+3.  Dinosaur Type with Largest Occurrence:
+
+    -   The dataset reveals the dinosaur type with the largest occurrence, providing insights into the most common species represented.
+
+4.  Outliers: Outliers are observed within the dataset, indicating instances where dinosaur characteristics deviate significantly from the norm. Further investigation is warranted to understand the reasons behind these outliers and their potential impact on the analysis.
+
+5.  Correlation between Dinosaur Length and Age:\*\* A correlation analysis between dinosaur length and age suggests a relationship between these variables. Understanding this correlation can provide valuable insights into the growth patterns of different dinosaur species over time. There is no correlation between the Age and length, the coeff is -0.11.
+
+**Conclusion**: This EDA sheds light on various aspects of the dinosaur dataset, including the distribution of dinosaur types, the presence of outliers, and correlations between dinosaur length and age. Further analysis and exploration are recommended to gain deeper insights into the evolutionary characteristics and behavior of dinosaurs.
